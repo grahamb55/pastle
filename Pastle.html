@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pastle: the daily date game</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#eef1f8;--card:#fff;--fg:#101a33;--mute:#5d6a8c;--line:#d3daea;--ac:#2748d6;--acfg:#fff;--gold:#e8a50e;--goldfg:#2a1d00;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0b1226;--card:#141f3e;--fg:#eef1f8;--mute:#98a5c8;--line:#2a3965;--ac:#7f9bff;--acfg:#0b1226;--gold:#ffc247;--goldfg:#2a1d00}}
+:root[data-theme="dark"]{--bg:#0b1226;--card:#141f3e;--fg:#eef1f8;--mute:#98a5c8;--line:#2a3965;--ac:#7f9bff;--acfg:#0b1226;--gold:#ffc247;--goldfg:#2a1d00}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:400 1rem/1.5 "Bricolage Grotesque",system-ui,sans-serif}
+main{max-width:30rem;margin:0 auto;padding:1rem 1rem 3rem}
+header{display:flex;align-items:center;gap:.6rem;padding:.25rem 0 1rem}
+header .dial{width:34px;height:34px}
+header b{font-size:1.5rem;font-weight:800;letter-spacing:-.02em}
+header span{margin-left:auto;color:var(--mute);font-size:.9rem}
+.dial .face{fill:var(--card);stroke:var(--fg);stroke-width:4}
+.dial .tk line{stroke:var(--mute);stroke-width:1.8;stroke-linecap:round}
+.dial .h{transform-origin:50px 50px;transition:transform .8s cubic-bezier(.3,1.3,.5,1)}
+.dial .hh line{stroke:var(--fg);stroke-width:5;stroke-linecap:round}
+.dial .mh line{stroke:var(--gold);stroke-width:3.5;stroke-linecap:round}
+.dial .pin{fill:var(--gold)}
+.hero{text-align:center;padding:1rem 0 .5rem}
+.hero .dial{width:210px;height:210px;filter:drop-shadow(0 10px 24px rgba(0,0,0,.18))}
+h1{font-size:3rem;font-weight:800;letter-spacing:-.03em;margin:.5rem 0 0;line-height:1}
+.mute{color:var(--mute)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:1.25rem;margin-top:1rem}
+.stats{display:flex;gap:.5rem;margin-top:1.25rem}
+.stats div{flex:1;text-align:center;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:.6rem}
+.stats b{display:block;font-size:1.5rem;font-weight:800}
+.stats span{font-size:.8rem;color:var(--mute)}
+.top{display:flex;justify-content:space-between;align-items:center;font-weight:600}
+.chip{background:var(--fg);color:var(--bg);border-radius:99px;padding:.15rem .8rem;font-size:.85rem}
+.pips{display:flex;gap:6px;margin:.75rem 0 0}
+.pips i{flex:1;height:5px;border-radius:3px;background:var(--line)}
+.pips i.on{background:var(--ac)}
+.q{font-size:1.3rem;font-weight:600;line-height:1.3;margin:.25rem 0 1rem}
+.dialrow{display:flex;align-items:center;gap:1rem}
+.dialrow .dial{width:96px;height:96px;flex:none}
+.year{font-size:3.4rem;font-weight:800;font-variant-numeric:tabular-nums;line-height:1;letter-spacing:-.03em}
+input[type=range]{width:100%;accent-color:var(--ac);margin:1rem 0 .25rem}
+.ends{display:flex;justify-content:space-between;font-size:.85rem}
+.row{display:flex;gap:.5rem;margin-top:1rem}
+select,input[type=number]{flex:1;min-width:0;padding:.7rem;border:1px solid var(--line);border-radius:12px;background:var(--bg);color:var(--fg);font:inherit}
+button{font:inherit;font-weight:600;border:0;border-radius:14px;padding:.95rem 1.2rem;background:var(--ac);color:var(--acfg);cursor:pointer;width:100%;margin-top:1rem;font-size:1.05rem}
+button:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+button.ghost{background:transparent;color:var(--fg);border:1px solid var(--line)}
+.pull{background:var(--gold);color:var(--goldfg);border-radius:14px;padding:.9rem 1rem;font-weight:800;font-size:1.3rem;text-align:center;margin-bottom:1rem}
+.pts{font-size:2.6rem;font-weight:800;line-height:1.1}
+.track{position:relative;height:36px;margin:1.2rem 0 .4rem;border-bottom:2px solid var(--line)}
+.track b{position:absolute;bottom:-7px;width:14px;height:14px;border-radius:50%;transform:translateX(-50%)}
+.track .a{background:var(--gold)}.track .g{background:var(--ac)}
+.track span{position:absolute;bottom:18px;font-size:.75rem;transform:translateX(-50%)}
+.sum{display:flex;justify-content:space-between;gap:1rem;padding:.5rem 0;border-bottom:1px solid var(--line)}
+.sum:last-of-type{border-bottom:0}
+.big{font-size:3.4rem;font-weight:800;letter-spacing:-.03em;line-height:1}
+.em{font-size:1.6rem;letter-spacing:.1em;margin:.5rem 0}
+@media (prefers-reduced-motion:reduce){.dial .h{transition:none}}
+</style>
+</head>
+<body>
+<main><header id="hd"></header><div id="app"></div></main>
+<script>
+var CATS=["Sports","Media","World history","Natural history","Fashion","Random"];
+var Q={
+"Sports":[
+{q:"Roger Bannister ran the first sub-4-minute mile.",y:1954,m:5,d:6,lo:1900,hi:2000},
+{q:"The first modern Olympic Games opened in Athens.",y:1896,m:4,d:6,lo:1850,hi:1950},
+{q:"Jackie Robinson made his Major League Baseball debut.",y:1947,m:4,d:15,lo:1900,hi:2000}],
+"Media":[
+{q:"YouTube's first video, 'Me at the zoo', was uploaded.",y:2005,m:4,d:23,lo:1990,hi:2025},
+{q:"Star Wars premiered in US cinemas.",y:1977,m:5,d:25,lo:1950,hi:2020},
+{q:"Wikipedia was launched.",y:2001,m:1,d:15,lo:1980,hi:2020}],
+"World history":[
+{q:"The Berlin Wall fell.",y:1989,m:11,d:9,lo:1900,hi:2000},
+{q:"The Bastille was stormed in Paris.",y:1789,m:7,d:14,lo:1500,hi:1900},
+{q:"King John sealed Magna Carta at Runnymede.",y:1215,m:6,d:15,lo:800,hi:1600}],
+"Natural history":[
+{q:"Darwin's On the Origin of Species was published.",y:1859,m:11,d:24,lo:1700,hi:1950},
+{q:"Krakatoa's catastrophic final eruption occurred.",y:1883,m:8,d:27,lo:1700,hi:2000},
+{q:"Mount St. Helens erupted.",y:1980,m:5,d:18,lo:1900,hi:2020}],
+"Fashion":[
+{q:"Christian Dior unveiled his 'New Look' collection.",y:1947,m:2,d:12,lo:1900,hi:2000},
+{q:"Levi Strauss and Jacob Davis received their patent for riveted work pants.",y:1873,m:5,d:20,lo:1800,hi:1950},
+{q:"Marilyn Monroe wore her famous crystal gown to sing for JFK.",y:1962,m:5,d:19,lo:1900,hi:2000}],
+"Random":[
+{q:"Apollo 11 landed on the Moon.",y:1969,m:7,d:20,lo:1900,hi:2000},
+{q:"The Titanic sank after hitting an iceberg.",y:1912,m:4,d:15,lo:1850,hi:1950},
+{q:"The first iPhone went on sale.",y:2007,m:6,d:29,lo:1990,hi:2020}]};
+var X={
+"Sports":[
+["Muhammad Ali beat Sonny Liston to win the heavyweight title.",1964,2,25,1930,2000],
+["The US hockey team beat the USSR in the 'Miracle on Ice'.",1980,2,22,1950,2010],
+["Wilt Chamberlain scored 100 points in a single NBA game.",1962,3,2,1930,2000],
+["Nadia Comaneci scored the first perfect 10 in Olympic gymnastics.",1976,7,18,1950,2010],
+["Jesse Owens won his first gold medal at the Berlin Olympics.",1936,8,3,1900,1970],
+["Babe Ruth hit his 60th home run of the season.",1927,9,30,1900,1960],
+["Usain Bolt ran the 100m world record of 9.58 seconds.",2009,8,16,1990,2025],
+["Maradona scored the 'Hand of God' goal against England.",1986,6,22,1950,2010],
+["The first Super Bowl was played.",1967,1,15,1940,2000],
+["Leicester City were confirmed Premier League champions.",2016,5,2,1990,2025],
+["The first Tour de France began.",1903,7,1,1850,1950],
+["Argentina beat France on penalties in the World Cup final in Qatar.",2022,12,18,2000,2030]],
+"Media":[
+["The first Harry Potter book was published in the UK.",1997,6,26,1980,2020],
+["The Beatles made their first appearance on The Ed Sullivan Show.",1964,2,9,1940,1990],
+["MTV launched on US television.",1981,8,1,1960,2000],
+["Michael Jackson's Thriller album was released.",1982,11,30,1960,2000],
+["Netflix launched its streaming service.",2007,1,16,1990,2020],
+["Jack Dorsey sent the first tweet.",2006,3,21,1990,2020],
+["Facebook was launched at Harvard.",2004,2,4,1990,2020],
+["Titanic (the film) was released in US cinemas.",1997,12,19,1950,2020],
+["The first episode of Friends aired.",1994,9,22,1970,2010],
+["Pac-Man was released in Japan.",1980,5,22,1960,2000],
+["Super Mario Bros. was released in Japan.",1985,9,13,1960,2000],
+["Orson Welles's radio broadcast of The War of the Worlds aired.",1938,10,30,1900,1980]],
+"World history":[
+["The US Declaration of Independence was adopted.",1776,7,4,1600,1900],
+["Japan attacked Pearl Harbor.",1941,12,7,1900,1980],
+["The Allies landed in Normandy on D-Day.",1944,6,6,1900,1980],
+["The Battle of Hastings was fought.",1066,10,14,800,1400],
+["Columbus first reached the Americas.",1492,10,12,1300,1700],
+["Constantinople fell to the Ottomans.",1453,5,29,1200,1700],
+["Archduke Franz Ferdinand was assassinated in Sarajevo.",1914,6,28,1850,1950],
+["Nelson Mandela was released from prison.",1990,2,11,1950,2020],
+["The terrorist attacks of 9/11 took place.",2001,9,11,1950,2020],
+["Napoleon was defeated at the Battle of Waterloo.",1815,6,18,1700,1900],
+["India gained independence from Britain.",1947,8,15,1850,2000],
+["The Treaty of Versailles was signed.",1919,6,28,1850,2000]],
+"Natural history":[
+["Mount Tambora's climactic eruption took place.",1815,4,10,1700,1900],
+["Dolly the cloned sheep was announced to the world.",1997,2,22,1950,2020],
+["Edward Jenner gave the first smallpox vaccination.",1796,5,14,1700,1900],
+["Alexander Fleming noticed the mould that led to penicillin.",1928,9,28,1850,1980],
+["Watson and Crick's DNA double helix paper was published in Nature.",1953,4,25,1900,2000],
+["The Valdivia earthquake, the strongest ever recorded, struck Chile.",1960,5,22,1900,2000],
+["The Indian Ocean tsunami struck.",2004,12,26,1950,2020],
+["The Tunguska event flattened forest in Siberia.",1908,6,30,1850,1950],
+["Clyde Tombaugh discovered Pluto.",1930,2,18,1850,2000],
+["The first Earth Day was held.",1970,4,22,1900,2000],
+["Mount Pinatubo's climactic eruption took place.",1991,6,15,1950,2020],
+["Yellowstone became the world's first national park.",1872,3,1,1800,1950]],
+"Fashion":[
+["Louis Reard unveiled the bikini in Paris.",1946,7,5,1900,2000],
+["Lady Diana Spencer married Prince Charles in her ivory taffeta gown.",1981,7,29,1950,2020],
+["The first issue of Vogue was published.",1892,12,17,1850,1950],
+["Breakfast at Tiffany's, with Audrey Hepburn's black dress, premiered.",1961,10,5,1900,2000],
+["Catherine Middleton wore Alexander McQueen's Sarah Burton design to marry Prince William.",2011,4,29,1990,2025],
+["Grace Kelly married Prince Rainier in Monaco.",1956,4,19,1900,2000],
+["Barbie debuted at the American International Toy Fair.",1959,3,9,1900,2000],
+["Queen Victoria married in a white dress, starting a trend.",1840,2,10,1750,1900],
+["Lady Gaga wore her meat dress at the MTV VMAs.",2010,9,12,1990,2020],
+["Jennifer Lopez wore the green Versace jungle dress at the Grammys.",2000,2,23,1980,2020],
+["The first Dr. Martens boots were produced.",1960,4,1,1900,2000],
+["Princess Diana wore her 'revenge dress' to the Serpentine Gallery.",1994,6,29,1950,2020]],
+"Random":[
+["The Wright brothers made their first powered flight.",1903,12,17,1850,1950],
+["The Soviet Union launched Sputnik 1.",1957,10,4,1900,2000],
+["Yuri Gagarin became the first human in space.",1961,4,12,1900,2000],
+["The Hindenburg airship burned at Lakehurst.",1937,5,6,1900,1980],
+["The first website went online.",1991,8,6,1970,2010],
+["The Chernobyl nuclear disaster occurred.",1986,4,26,1950,2020],
+["Hillary and Tenzing first reached the summit of Everest.",1953,5,29,1900,2000],
+["Charles Lindbergh landed in Paris after crossing the Atlantic solo.",1927,5,21,1900,1970],
+["Concorde began commercial passenger flights.",1976,1,21,1950,2010],
+["The Eiffel Tower was inaugurated.",1889,3,31,1800,1950],
+["The Statue of Liberty was dedicated.",1886,10,28,1800,1950],
+["The Space Shuttle Challenger broke apart after launch.",1986,1,28,1950,2020]]};
+for(var c in X)X[c].forEach(function(a){Q[c].push({q:a[0],y:a[1],m:a[2],d:a[3],lo:a[4],hi:a[5]})});
+var MON=["January","February","March","April","May","June","July","August","September","October","November","December"];
+var app=document.getElementById("app"),S,T,K="pastle-v1",DB;
+try{DB=JSON.parse(localStorage.getItem(K))}catch(e){}
+DB=DB||{};DB.days=DB.days||{};DB.st=DB.st||{streak:0,best:0,played:0,last:""};
+function save(){try{localStorage.setItem(K,JSON.stringify(DB))}catch(e){}}
+function pad(n){return(n<10?"0":"")+n}
+function dkey(d){return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate())}
+var NOW=new Date(),TODAY=dkey(NOW);
+var NUM=Math.round((Date.UTC(NOW.getFullYear(),NOW.getMonth(),NOW.getDate())-Date.UTC(2026,9,1))/864e5)+1;
+function esc(t){return String(t).replace(/[&<>]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;"}[c]})}
+function dim(y,m){return m==2?((y%4==0&&y%100!=0)||y%400==0?29:28):[31,0,31,30,31,30,31,31,30,31,30,31][m-1]}
+function dial(c,h,m){var t="";for(var k=0;k<12;k++)t+='<line x1="50" y1="9" x2="50" y2="'+(k%3?12:15)+'" transform="rotate('+k*30+' 50 50)"/>';
+ return'<svg class="dial '+c+'" viewBox="0 0 100 100" role="img" aria-label="Clock"><circle cx="50" cy="50" r="46" class="face"/><g class="tk">'+t+'</g><g class="h hh" style="transform:rotate('+h+'deg)"><line x1="50" y1="50" x2="50" y2="27"/></g><g class="h mh" style="transform:rotate('+m+'deg)"><line x1="50" y1="50" x2="50" y2="13"/></g><circle cx="50" cy="50" r="3.5" class="pin"/></svg>'}
+function hands(el,h,m){el.querySelector(".hh").style.transform="rotate("+h+"deg)";el.querySelector(".mh").style.transform="rotate("+m+"deg)"}
+document.getElementById("hd").innerHTML=dial("",305,60)+'<b>Pastle</b><span>No. '+NUM+'</span>';
+function show(h){clearInterval(T);app.innerHTML=h;window.scrollTo(0,0)}
+function pips(){var h="";for(var k=0;k<6;k++)h+='<i class="'+(k<=S.i?"on":"")+'"></i>';return'<div class="pips">'+h+'</div>'}
+function rounds(n,rand){return CATS.map(function(c,k){var p=Q[c];return Object.assign({cat:c},p[rand?Math.floor(Math.random()*p.length):(n+k)%p.length])})}
+function home(){var d=DB.days[TODAY],st=DB.st,done=d&&d.done,lbl=done?"See today's result":d?"Continue with round "+(d.i+1):"Play today's Pastle";
+ show('<div class="hero">'+dial("big",0,0)+'<h1>Pastle</h1><p class="mute" style="margin:.5rem 0 0">Pin the date of six events. One puzzle a day.</p></div>'+
+ '<button onclick="play(false)">'+lbl+'</button><button class="ghost" onclick="play(true)">Practice with random events</button>'+
+ '<div class="stats"><div><b>'+st.streak+'</b><span>Streak</span></div><div><b>'+st.best+'</b><span>Best streak</span></div><div><b>'+st.played+'</b><span>Played</span></div></div>');
+ setTimeout(function(){var e=app.querySelector(".big");if(e)hands(e,305,60)},150)}
+function play(practice){var d=DB.days[TODAY];
+ S={practice:practice,i:0,total:0,res:[],rounds:rounds(NUM,practice)};
+ if(!practice&&d){S.i=d.i;S.total=d.total;S.res=d.res;if(d.done)return fin()}
+ round()}
+function round(){var r=S.rounds[S.i];S.g={y:Math.round((r.lo+r.hi)/2),m:1,d:1};
+ show('<div class="top"><span class="chip">'+r.cat+'</span><span>Round '+(S.i+1)+' of 6</span></div>'+pips()+
+ '<div class="card"><p class="q">'+esc(r.q)+'</p><div class="dialrow">'+dial("",0,0)+'<div class="year" id="yv"></div></div><input id="ys" type="range" min="'+r.lo+'" max="'+r.hi+'" value="'+S.g.y+'" aria-label="Year" oninput="setY(this.value)"><div class="ends mute"><span>'+r.lo+'</span><span>'+r.hi+'</span></div>'+
+ '<div class="row"><input id="yn" type="number" min="'+r.lo+'" max="'+r.hi+'" aria-label="Type a year" oninput="setY(this.value,1)"><select id="ms" aria-label="Month" onchange="S.g.m=+this.value;days()">'+MON.map(function(n,k){return'<option value="'+(k+1)+'">'+n+'</option>'}).join("")+'</select><select id="ds" aria-label="Day" onchange="S.g.d=+this.value"></select></div><button onclick="lock()">Lock in guess</button></div>');
+ setY(S.g.y)}
+function setY(v,typed){var r=S.rounds[S.i];v=Math.max(0,parseInt(v)||0);S.g.y=v;document.getElementById("yv").textContent=v;
+ if(!typed)document.getElementById("yn").value=v;document.getElementById("ys").value=v;
+ var f=Math.min(1,Math.max(0,(v-r.lo)/(r.hi-r.lo)));hands(app.querySelector(".dial"),f*60,f*720);days()}
+function days(){var n=dim(S.g.y,S.g.m),h="";if(S.g.d>n)S.g.d=n;for(var k=1;k<=n;k++)h+='<option value="'+k+'"'+(k==S.g.d?" selected":"")+'>'+k+'</option>';document.getElementById("ds").innerHTML=h}
+function score(r,g){var off=Math.abs(g.y-r.y),span=r.hi-r.lo;
+ if(off==0){if(g.m!=r.m)return{p:350,t:"Right year"};if(g.d!=r.d)return{p:425,t:"Right year and month"};return{p:500,t:"Once in a Lifetime Pull",j:1}}
+ var p=Math.round(300*Math.pow(Math.max(0,1-off/(span*0.3)),2));return{p:p,t:p>=200?"Close":p>=80?"In the neighborhood":"Way off the map"}}
+function fmt(y,m,d){return MON[m-1]+" "+d+", "+y}
+function pos(r,y){return Math.min(96,Math.max(4,(y-r.lo)/(r.hi-r.lo)*100))}
+function lock(){var r=S.rounds[S.i],g=S.g,s=score(r,g),last=S.i==5;S.total+=s.p;S.res.push({cat:r.cat,p:s.p,j:s.j?1:0});
+ if(!S.practice){DB.days[TODAY]={i:S.i+1,total:S.total,res:S.res,done:last};
+  if(last){var st=DB.st,y=new Date(NOW.getFullYear(),NOW.getMonth(),NOW.getDate()-1);st.streak=st.last==dkey(y)?st.streak+1:1;st.best=Math.max(st.best,st.streak);st.played++;st.last=TODAY}save()}
+ show('<div class="top"><span class="chip">'+r.cat+'</span><span>'+S.total+' pts</span></div>'+pips()+'<div class="card">'+(s.j?'<div class="pull">Once in a Lifetime Pull</div>':'')+
+ '<p class="q">'+esc(r.q)+'</p><div class="dialrow">'+dial("",s.j?0:305,s.j?0:60)+'<div><div class="pts">+'+s.p+'</div><span class="mute">of 500, '+s.t+'</span></div></div>'+
+ '<div class="track"><span style="left:'+pos(r,r.y)+'%">Answer</span><b class="a" style="left:'+pos(r,r.y)+'%"></b><b class="g" style="left:'+pos(r,g.y)+'%"></b></div><div class="ends mute"><span>'+r.lo+'</span><span>'+r.hi+'</span></div>'+
+ '<div class="sum"><span>Correct date</span><b>'+fmt(r.y,r.m,r.d)+'</b></div><div class="sum"><span>Your guess</span><b>'+fmt(g.y,g.m,g.d)+'</b></div>'+
+ '<button onclick="'+(last?"fin()":"S.i++;round()")+'">'+(last?"See final score":"Next round")+'</button></div>')}
+function em(r){return r.j?"🌟":r.p>=350?"🟩":r.p>=200?"🟨":r.p>=80?"🟧":"⬛"}
+function fin(){var t=S.total,e=S.res.map(em).join(""),n=t>=2400?"Time lord":t>=1800?"Archivist":t>=1000?"History buff":"Still finding your feet";
+ window.TXT="Pastle "+(S.practice?"practice":"#"+NUM)+" "+t+"/3000\n"+e+"\npastle.io";
+ show('<div class="card" style="text-align:center"><span class="mute">'+(S.practice?"Practice game":"Pastle No. "+NUM)+'</span><div class="big">'+t+'<span class="mute" style="font-size:1.4rem"> / 3000</span></div><div>'+n+'</div><div class="em">'+e+'</div></div>'+
+ '<div class="card">'+S.res.map(function(r){return'<div class="sum"><span>'+r.cat+'</span><b>'+(r.j?"Once in a Lifetime Pull, ":"")+r.p+'</b></div>'}).join("")+'</div>'+
+ '<button id="cp" onclick="copy()">Copy my score</button>'+
+ (S.practice?'<button class="ghost" onclick="play(true)">Another practice game</button>':'<p class="mute" style="text-align:center;margin-top:1rem">Next Pastle in <b id="cd"></b></p>')+'<button class="ghost" onclick="home()">Back home</button>');
+ if(!S.practice){var tick=function(){var x=new Date(),ms=new Date(x.getFullYear(),x.getMonth(),x.getDate()+1)-x,s=Math.floor(ms/1000),el=document.getElementById("cd");if(!el)return;el.textContent=pad(Math.floor(s/3600))+":"+pad(Math.floor(s%3600/60))+":"+pad(s%60);if(ms<=0)location.reload()};tick();T=setInterval(tick,1000)}}
+function copy(){var b=document.getElementById("cp");try{navigator.clipboard.writeText(window.TXT).then(function(){b.textContent="Copied"},function(){b.textContent="Copy failed"})}catch(e){b.textContent="Copy failed"}}
+home();
+</script>
+</body>
+</html>
